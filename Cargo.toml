@@ -1,6 +1,6 @@
 [package]
 name = "dbc2shark"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 description = "A CLI tool that converts a CAN DBC file (Vector DBC format) into a Wireshark Lua dissector"
 license = "MIT"
