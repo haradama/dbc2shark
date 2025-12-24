@@ -111,10 +111,10 @@ fn generate_lua(dbc: &Dbc, proto_name: &str, out: &mut impl Write) -> io::Result
         p_name, p_name
     )?;
     writeln!(out, "{}", LUA_HELPERS)?;
-    writeln!(out, "")?;
+    writeln!(out)?;
 
     writeln!(out, "local f_can_id = Field.new(\"can.id\")")?;
-    writeln!(out, "")?;
+    writeln!(out)?;
 
     for message in &dbc.messages {
         writeln!(
@@ -180,7 +180,7 @@ fn generate_lua(dbc: &Dbc, proto_name: &str, out: &mut impl Write) -> io::Result
                 var_name, field_type, full_filter_name, signal.name
             )?;
         }
-        writeln!(out, "")?;
+        writeln!(out)?;
     }
 
     writeln!(out, "p_{}.fields = {{", p_name)?;
@@ -192,15 +192,15 @@ fn generate_lua(dbc: &Dbc, proto_name: &str, out: &mut impl Write) -> io::Result
         }
     }
     writeln!(out, "}}")?;
-    writeln!(out, "")?;
+    writeln!(out)?;
 
     writeln!(out, "function p_{}.dissector(tvbuf, pinfo, tree)", p_name)?;
 
     writeln!(out, "    if type(tree) ~= \"userdata\" then return 0 end")?;
-    writeln!(out, "")?;
+    writeln!(out)?;
     writeln!(out, "    local can_id_fi = f_can_id()")?;
     writeln!(out, "    if not can_id_fi then return 0 end")?;
-    writeln!(out, "")?;
+    writeln!(out)?;
     writeln!(out, "    local can_id = can_id_fi.value")?;
     writeln!(
         out,
@@ -211,12 +211,12 @@ fn generate_lua(dbc: &Dbc, proto_name: &str, out: &mut impl Write) -> io::Result
     writeln!(out, "        can_id = tonumber(can_id)")?;
     writeln!(out, "    end")?;
     writeln!(out, "    if not can_id then return 0 end")?;
-    writeln!(out, "")?;
+    writeln!(out)?;
     writeln!(
         out,
         "    if not tvbuf or tvbuf:len() == 0 then return 0 end"
     )?;
-    writeln!(out, "")?;
+    writeln!(out)?;
     writeln!(
         out,
         "    local subtree = tree:add(p_{}, tvbuf(), \"CAN Database Dissector\")",
@@ -226,7 +226,7 @@ fn generate_lua(dbc: &Dbc, proto_name: &str, out: &mut impl Write) -> io::Result
         out,
         "    if type(subtree) ~= \"userdata\" then return 0 end"
     )?;
-    writeln!(out, "")?;
+    writeln!(out)?;
 
     let mut first = true;
     for message in &dbc.messages {
@@ -258,7 +258,7 @@ fn generate_lua(dbc: &Dbc, proto_name: &str, out: &mut impl Write) -> io::Result
             let is_le = matches!(signal.byte_order, ByteOrder::LittleEndian);
             let is_signed = matches!(signal.value_type, ValueType::Signed);
 
-            writeln!(out, "")?;
+            writeln!(out)?;
             writeln!(
                 out,
                 "        -- {}: start_bit={} len={} {} {}, factor={}",
@@ -308,10 +308,10 @@ fn generate_lua(dbc: &Dbc, proto_name: &str, out: &mut impl Write) -> io::Result
         writeln!(out, "    end")?;
     }
 
-    writeln!(out, "")?;
+    writeln!(out)?;
     writeln!(out, "    return tvbuf:len()")?;
     writeln!(out, "end")?;
-    writeln!(out, "")?;
+    writeln!(out)?;
 
     writeln!(out, "do")?;
     writeln!(
