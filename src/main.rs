@@ -116,6 +116,10 @@ fn generate_lua(dbc: &Dbc, proto_name: &str, out: &mut impl Write) -> io::Result
     writeln!(out, "local f_can_id = Field.new(\"can.id\")")?;
     writeln!(out)?;
 
+    writeln!(out, "local fields = {{}}")?;
+    writeln!(out, "local p_fields = {{}}")?;
+    writeln!(out)?;
+
     for message in &dbc.messages {
         writeln!(
             out,
@@ -128,7 +132,8 @@ fn generate_lua(dbc: &Dbc, proto_name: &str, out: &mut impl Write) -> io::Result
         for signal in &message.signals {
             let sig_name_snake = signal.name.to_snake_case();
             let full_filter_name = format!("{}.{}.{}", p_name, msg_name_snake, sig_name_snake);
-            let var_name = format!("f_{}_{}", msg_name_snake, sig_name_snake);
+
+            let key = format!("{}_{}", msg_name_snake, sig_name_snake);
 
             let field_type = if is_integer_signal(signal.factor, signal.offset) {
                 let is_signed = matches!(signal.value_type, ValueType::Signed);
@@ -176,22 +181,18 @@ fn generate_lua(dbc: &Dbc, proto_name: &str, out: &mut impl Write) -> io::Result
 
             writeln!(
                 out,
-                "local {} = ProtoField.{}(\"{}\", \"{}\")",
-                var_name, field_type, full_filter_name, signal.name
+                "fields[{key:?}] = ProtoField.{ty}(\"{filter}\", \"{label}\")",
+                key = key,
+                ty = field_type,
+                filter = full_filter_name,
+                label = signal.name
             )?;
+            writeln!(out, "p_fields[#p_fields+1] = fields[{key:?}]", key = key)?;
         }
         writeln!(out)?;
     }
 
-    writeln!(out, "p_{}.fields = {{", p_name)?;
-    for message in &dbc.messages {
-        let msg_name_snake = message.name.to_snake_case();
-        for signal in &message.signals {
-            let sig_name_snake = signal.name.to_snake_case();
-            writeln!(out, "    f_{}_{},", msg_name_snake, sig_name_snake)?;
-        }
-    }
-    writeln!(out, "}}")?;
+    writeln!(out, "p_{}.fields = p_fields", p_name)?;
     writeln!(out)?;
 
     writeln!(out, "function p_{}.dissector(tvbuf, pinfo, tree)", p_name)?;
@@ -253,7 +254,8 @@ fn generate_lua(dbc: &Dbc, proto_name: &str, out: &mut impl Write) -> io::Result
         let msg_name_snake = message.name.to_snake_case();
         for signal in &message.signals {
             let sig_name_snake = signal.name.to_snake_case();
-            let var_name = format!("f_{}_{}", msg_name_snake, sig_name_snake);
+
+            let key = format!("{}_{}", msg_name_snake, sig_name_snake);
 
             let is_le = matches!(signal.byte_order, ByteOrder::LittleEndian);
             let is_signed = matches!(signal.value_type, ValueType::Signed);
@@ -295,8 +297,10 @@ fn generate_lua(dbc: &Dbc, proto_name: &str, out: &mut impl Write) -> io::Result
 
             writeln!(
                 out,
-                "                add_with_highlight(subtree, {}, tvbuf, {}, {}, phys)",
-                var_name, signal.start_bit, signal.size
+                "                add_with_highlight(subtree, fields[{key:?}], tvbuf, {}, {}, phys)",
+                signal.start_bit,
+                signal.size,
+                key = key
             )?;
 
             writeln!(out, "            end")?;
