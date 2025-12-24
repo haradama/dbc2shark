@@ -2,6 +2,12 @@
 name = "dbc2shark"
 version = "0.1.0"
 edition = "2024"
+description = "A CLI tool that converts a CAN DBC file (Vector DBC format) into a Wireshark Lua dissector"
+license = "MIT"
+repository = "https://github.com/haradama/dbc2shark"
+readme = "README.md"
+keywords = ["cli", "tool", "automotive"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 anyhow = "1.0.100"

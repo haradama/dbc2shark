@@ -53,6 +53,8 @@ Open a capture that contains CAN frames
 
 As long as Wireshark can decode the capture into CAN packets with a valid `can.id` field, the generated dissector will decode and show DBC signals for matching CAN IDs.
 
+![example](./docs/wireshark.png)
+
 ## License
 
 MIT License. See `LICENSE` for details.
