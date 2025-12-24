@@ -55,7 +55,8 @@ local function extract_can_signal(buffer, start_bit, length, is_little_endian, i
         -- Motorola format
         local linear_start = (math.floor(start_bit / 8) * 8) + (7 - (start_bit % 8))
         if buffer:len() * 8 >= linear_start + length then
-            val = buffer:bitfield(linear_start, length)
+            local full = buffer:range(0, buffer:len())
+            val = full:bitfield(linear_start, length)
             val = UInt64(val)
         else
             return nil, nil
